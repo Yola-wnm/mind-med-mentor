@@ -58,12 +58,12 @@ const Index = () => {
     if (gameState.gameStarted && !gameState.gameEnded) {
       loadNextQuestion();
     }
-  }, [gameState.currentQuestionIndex, gameState.gameStarted]);
+  }, [gameState.currentQuestionIndex, gameState.gameStarted, gameState.gameEnded]);
 
   const loadNextQuestion = () => {
-    if (gameState.currentQuestionIndex < medicalQuestions.length) {
+    if (gameState.currentQuestionIndex < medicalQuestions.length && !gameState.gameEnded) {
       setCurrentQuestion(medicalQuestions[gameState.currentQuestionIndex]);
-    } else {
+    } else if (gameState.currentQuestionIndex >= medicalQuestions.length) {
       endGame();
     }
   };
@@ -110,7 +110,6 @@ const Index = () => {
         bestStreak: newBestStreak,
         totalQuestions: prev.totalQuestions + 1,
         correctAnswers: newCorrectAnswers,
-        currentQuestionIndex: prev.currentQuestionIndex + 1,
       };
     });
 
@@ -127,16 +126,22 @@ const Index = () => {
       });
       
       if (gameState.lives <= 1) {
-        endGame();
+        setTimeout(() => endGame(), 1000);
         return;
       }
     }
+  };
 
-    setTimeout(() => {
-      if (gameState.currentQuestionIndex + 1 >= medicalQuestions.length) {
-        endGame();
-      }
-    }, 2000);
+  const handleNext = () => {
+    setGameState(prev => ({
+      ...prev,
+      currentQuestionIndex: prev.currentQuestionIndex + 1,
+    }));
+
+    // Sprawdź czy to było ostatnie pytanie
+    if (gameState.currentQuestionIndex + 1 >= medicalQuestions.length) {
+      setTimeout(() => endGame(), 500);
+    }
   };
 
   const endGame = () => {
@@ -241,6 +246,7 @@ const Index = () => {
             <QuestionCard
               question={currentQuestion}
               onAnswer={handleAnswer}
+              onNext={handleNext}
             />
           </div>
         )}

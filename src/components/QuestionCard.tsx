@@ -22,11 +22,13 @@ interface Question {
 interface QuestionCardProps {
   question: Question;
   onAnswer: (isCorrect: boolean, points: number) => void;
+  onNext: () => void;
 }
 
-const QuestionCard = ({ question, onAnswer }: QuestionCardProps) => {
+const QuestionCard = ({ question, onAnswer, onNext }: QuestionCardProps) => {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
+  const [canProceed, setCanProceed] = useState(false);
 
   const handleAnswerSelect = (answerId: string) => {
     if (selectedAnswer) return;
@@ -38,9 +40,20 @@ const QuestionCard = ({ question, onAnswer }: QuestionCardProps) => {
     const isCorrect = answer?.isCorrect || false;
     const points = isCorrect ? 100 : 0;
     
+    // Pozwól przejść do następnego pytania po 2 sekundach
     setTimeout(() => {
-      onAnswer(isCorrect, points);
-    }, 3000);
+      setCanProceed(true);
+    }, 2000);
+    
+    onAnswer(isCorrect, points);
+  };
+
+  const handleNext = () => {
+    onNext();
+    // Reset stanu dla następnego pytania
+    setSelectedAnswer(null);
+    setShowExplanation(false);
+    setCanProceed(false);
   };
 
   return (
@@ -105,6 +118,14 @@ const QuestionCard = ({ question, onAnswer }: QuestionCardProps) => {
                 </p>
               </div>
             </div>
+          </div>
+        )}
+
+        {canProceed && (
+          <div className="mt-6 text-center">
+            <Button onClick={handleNext} size="lg" variant="medical">
+              Następne pytanie →
+            </Button>
           </div>
         )}
       </CardContent>

@@ -144,6 +144,31 @@ const Index = () => {
     }
   };
 
+  const handleTimeUp = () => {
+    setGameState(prev => ({
+      ...prev,
+      lives: Math.max(0, prev.lives - 1),
+      totalQuestions: prev.totalQuestions + 1,
+      currentQuestionIndex: prev.currentQuestionIndex + 1,
+    }));
+
+    toast({
+      title: "Czas minął! ⏰",
+      description: "Tracisz życie za brak odpowiedzi w czasie",
+      variant: "destructive",
+    });
+
+    if (gameState.lives <= 1) {
+      setTimeout(() => endGame(), 1000);
+      return;
+    }
+
+    // Sprawdź czy to było ostatnie pytanie
+    if (gameState.currentQuestionIndex + 1 >= medicalQuestions.length) {
+      setTimeout(() => endGame(), 1000);
+    }
+  };
+
   const endGame = () => {
     setGameState(prev => ({ ...prev, gameEnded: true }));
     
@@ -242,11 +267,12 @@ const Index = () => {
         />
         
         {currentQuestion && (
-          <div className="flex justify-center">
+          <div className="flex justify-center animate-fade-in">
             <QuestionCard
               question={currentQuestion}
               onAnswer={handleAnswer}
               onNext={handleNext}
+              onTimeUp={handleTimeUp}
             />
           </div>
         )}
